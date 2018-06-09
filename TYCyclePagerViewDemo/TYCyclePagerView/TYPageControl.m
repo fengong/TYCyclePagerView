@@ -202,6 +202,7 @@
     if (_hidesForSinglePage && _indicatorViews.count == 1) {
         UIImageView *indicatorView = _indicatorViews.lastObject;
         indicatorView.hidden = YES;
+        return;
     }
     NSInteger index = 0;
     for (UIImageView *indicatorView in _indicatorViews) {
@@ -267,7 +268,7 @@
         if (_pageIndicatorImage) {
             indicatorView.layer.cornerRadius = 0;
         }else {
-            indicatorView.layer.cornerRadius = _currentPage == index ? _currentPageIndicatorSize.width/2 : _pageIndicatorSize.width/2;
+            indicatorView.layer.cornerRadius = _currentPage == index ? _currentPageIndicatorSize.height/2 : _pageIndicatorSize.height/2;
         }
         CGSize size = index == _currentPage ? _currentPageIndicatorSize : _pageIndicatorSize;
         indicatorView.frame = CGRectMake(orignX - (size.width - _pageIndicatorSize.width)/2, centerY - size.height/2, size.width, size.height);

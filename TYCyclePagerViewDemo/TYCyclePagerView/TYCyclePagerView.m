@@ -48,10 +48,13 @@ NS_INLINE TYIndexSection TYMakeIndexSection(NSInteger index, NSInteger section) 
 @property (nonatomic, assign) TYIndexSection indexSection; // current index
 @property (nonatomic, assign) NSInteger dequeueSection;
 @property (nonatomic, assign) TYIndexSection beginDragIndexSection;
+@property (nonatomic, assign) NSInteger firstScrollIndex;
 
 @property (nonatomic, assign) BOOL needClearLayout;
 @property (nonatomic, assign) BOOL didReloadData;
 @property (nonatomic, assign) BOOL didLayout;
+
+
 
 @end
 
@@ -89,6 +92,7 @@ NS_INLINE TYIndexSection TYMakeIndexSection(NSInteger index, NSInteger section) 
     _beginDragIndexSection.section = 0;
     _indexSection.index = -1;
     _indexSection.section = -1;
+    _firstScrollIndex = -1;
 }
 
 - (void)addCollectionView {
@@ -258,12 +262,17 @@ NS_INLINE TYIndexSection TYMakeIndexSection(NSInteger index, NSInteger section) 
 }
 
 - (void)scrollToItemAtIndex:(NSInteger)index animate:(BOOL)animate {
+    if (!_didLayout && _didReloadData) {
+        _firstScrollIndex = index;
+    }else {
+        _firstScrollIndex = -1;
+    }
     if (!_isInfiniteLoop) {
         [self scrollToItemAtIndexSection:TYMakeIndexSection(index, 0) animate:animate];
         return;
     }
 
-    [self scrollToItemAtIndexSection:TYMakeIndexSection(index, index >= self.curIndex ? _indexSection.section : _indexSection.section+1) animate:YES];
+    [self scrollToItemAtIndexSection:TYMakeIndexSection(index, index >= self.curIndex ? _indexSection.section : _indexSection.section+1) animate:animate];
 }
 
 - (void)scrollToItemAtIndexSection:(TYIndexSection)indexSection animate:(BOOL)animate {
@@ -399,14 +408,25 @@ NS_INLINE TYIndexSection TYMakeIndexSection(NSInteger index, NSInteger section) 
         return 0;
     }
     UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout *)_collectionView.collectionViewLayout;
-    CGFloat leftEdge = _isInfiniteLoop ? _layout.sectionInset.left : _layout.onlyOneSectionInset.left;
+    UIEdgeInsets edge = _isInfiniteLoop ? _layout.sectionInset : _layout.onlyOneSectionInset;
+    CGFloat leftEdge = edge.left;
+    CGFloat rightEdge = edge.right;
     CGFloat width = CGRectGetWidth(_collectionView.frame);
     CGFloat itemWidth = layout.itemSize.width + layout.minimumInteritemSpacing;
-    CGFloat offsetX = leftEdge + itemWidth*(indexSection.index + indexSection.section*_numberOfItems) - layout.minimumInteritemSpacing/2 - (width - itemWidth)/2;
+    CGFloat offsetX = 0;
+    if (!_isInfiniteLoop && !_layout.itemHorizontalCenter && indexSection.index == _numberOfItems - 1) {
+        offsetX = leftEdge + itemWidth*(indexSection.index + indexSection.section*_numberOfItems) - (width - itemWidth) -  layout.minimumInteritemSpacing + rightEdge;
+    }else {
+        offsetX = leftEdge + itemWidth*(indexSection.index + indexSection.section*_numberOfItems) - layout.minimumInteritemSpacing/2 - (width - itemWidth)/2;
+    }
     return MAX(offsetX, 0);
 }
 
 - (void)resetPagerViewAtIndex:(NSInteger)index {
+    if (_didLayout && _firstScrollIndex >= 0) {
+        index = _firstScrollIndex;
+        _firstScrollIndex = -1;
+    }
     if (index < 0) {
         return;
     }

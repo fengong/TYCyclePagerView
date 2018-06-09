@@ -17,6 +17,7 @@
 @property (nonatomic, strong) TYPageControl *pageControl;
 @property (nonatomic, strong) NSArray *datas;
 
+@property (weak, nonatomic) IBOutlet UISwitch *horCenterSwitch;
 @end
 
 @implementation ViewController
@@ -47,7 +48,10 @@
 - (void)addPageControl {
     TYPageControl *pageControl = [[TYPageControl alloc]init];
     //pageControl.numberOfPages = _datas.count;
-    pageControl.currentPageIndicatorSize = CGSizeMake(8, 8);
+    pageControl.currentPageIndicatorSize = CGSizeMake(6, 6);
+    pageControl.pageIndicatorSize = CGSizeMake(12, 6);
+    pageControl.currentPageIndicatorTintColor = [UIColor redColor];
+    pageControl.pageIndicatorTintColor = [UIColor grayColor];
 //    pageControl.pageIndicatorImage = [UIImage imageNamed:@"Dot"];
 //    pageControl.currentPageIndicatorImage = [UIImage imageNamed:@"DotSelected"];
 //    pageControl.contentInset = UIEdgeInsetsMake(0, 20, 0, 20);
@@ -76,6 +80,7 @@
     _datas = [datas copy];
     _pageControl.numberOfPages = _datas.count;
     [_pagerView reloadData];
+    //[_pagerView scrollToItemAtIndex:3 animate:YES];
 }
 
 //- (void)loadData {
@@ -112,7 +117,7 @@
     layout.itemSize = CGSizeMake(CGRectGetWidth(pageView.frame)*0.8, CGRectGetHeight(pageView.frame)*0.8);
     layout.itemSpacing = 15;
     //layout.minimumAlpha = 0.3;
-    layout.itemHorizontalCenter = YES;
+    layout.itemHorizontalCenter = _horCenterSwitch.isOn;
     return layout;
 }
 
